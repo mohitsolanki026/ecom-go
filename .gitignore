@@ -1,0 +1,53 @@
+# env
+.env
+
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+
+# Executables
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go binaries
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go test and benchmark files
+*.test
+*.prof
+
+# Go coverage profile
+*.cover
+
+# Go generated files
+*.pb.go
+*.pb.gw.go
+
+# Go vendor directory
+/vendor/
+
+# IDE specific files
+.idea/
+.vscode/
+*.sublime-*
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+ehthumbs_vista.db
+
