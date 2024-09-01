@@ -27,29 +27,36 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	// handle login
 	var payload types.LoginUser
-	if err := utils.ParseJSON(r,&payload); err != nil {
+	if err := utils.ParseJSON(r, &payload); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
 
 	if err := utils.Validate.Struct(payload); err != nil {
 		error := err.(validator.ValidationErrors)
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("validator errors: %v",error))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("validator errors: %v", error))
 		return
 	}
 
 	user, err := h.store.GetUserByEmail(payload.Email)
 	if err != nil {
-		utils.WriteError(w,http.StatusNotFound,err)
+		utils.WriteError(w, http.StatusNotFound, err)
 		return
 	}
 
-	if !auth.ComparePassword(user.Password, []byte(payload.Password)){
-		utils.WriteError(w,http.StatusUnauthorized,fmt.Errorf("invalid password"))
+	if !auth.ComparePassword(user.Password, []byte(payload.Password)) {
+		utils.WriteError(w, http.StatusUnauthorized, fmt.Errorf("invalid password"))
 		return
 	}
 
-	utils.WriteJSON(w,http.StatusOK,nil)
+	token, err := auth.CreateJwtToken(user.ID)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": token})
 }
 
 func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +74,6 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	
 	// check if user already exists
 	_, err := h.store.GetUserByEmail(payload.Email)
 	if err == nil {
