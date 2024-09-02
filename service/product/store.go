@@ -51,10 +51,9 @@ func scanRowIntoProducts(rows *sql.Rows) (*types.Product, error) {
 	return product, nil
 }
 
-// CreateProduct
 func (s *Store) CreateProduct(product *types.Product) error {
 	_, err := s.db.Exec(
-		"INSERT INTO products (name, description, image, price, quantity) VALUES ($1, $2, $3, $4, $5)",
+		"INSERT INTO products (name, description, image, price, quantity) VALUES (?,?,?,?,?)",
 		product.Name,
 		product.Description,
 		product.Image,
