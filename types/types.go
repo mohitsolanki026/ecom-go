@@ -16,7 +16,7 @@ type ProductStore interface {
 }
 
 type OrderStore interface {
-	GetProducts() ([]Product, error)
+	// GetProducts() ([]Product, error)
 	CreateOrderItem(orderItem OrderItem) error
 	CreateOrder(order Order)(int, error)
 

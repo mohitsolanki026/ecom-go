@@ -87,3 +87,4 @@ func calculateTotalPrice(cartItems []types.CartItem, products map[int]types.Prod
 	}
 	return total
 }
+

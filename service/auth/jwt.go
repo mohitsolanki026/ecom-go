@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,6 +13,10 @@ import (
 	"github.com/mohitsolanki026/econ-go/types"
 	"github.com/mohitsolanki026/econ-go/utils"
 )
+
+type contextKey string 
+
+const UserKey contextKey = "userID"
 
 func CreateJwtToken(UserId int) (string, error) {
 	// Create JWT token
@@ -33,19 +38,38 @@ func CreateJwtToken(UserId int) (string, error) {
 }
 
 func WithJwtAuth(handlerFunc http.HandlerFunc, store types.UserStore) http.HandlerFunc {
-	tokenString := getTokenFromRequest(r)
-	token, err := validateToken(tokenString)
-	if err != nil {
-		permissionDenied(w)
-		return
-	}
+	return func(w http.ResponseWriter, r *http.Request) {
 
-	if !token.Valid {
-		log.Printf("invalid token")
-		permissionDenied(w)
-		return
-	}
+		tokenString := getTokenFromRequest(r)
+		token, err := validateToken(tokenString)
+		if err != nil {
+			permissionDenied(w)
+			return
+		}
 
+		if !token.Valid {
+			log.Printf("invalid token")
+			permissionDenied(w)
+			return
+		}
+
+		claims := token.Claims.(jwt.MapClaims)
+		str := claims["userID"].(string)
+
+		userID,_ := strconv.Atoi(str)
+
+		u,err := store.GetUserById(userID)
+		if  err != nil {
+			permissionDenied(w)
+			return
+		}
+
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, UserKey,u.ID)
+		r = r.WithContext(ctx)
+
+		handlerFunc(w,r)
+	}
 }
 
 func getTokenFromRequest(r *http.Request) string {
@@ -68,4 +92,12 @@ func validateToken(t string) (*jwt.Token, error) {
 
 func permissionDenied(w http.ResponseWriter) {
 	utils.WriteError(w, http.StatusForbidden, fmt.Errorf("permission denied"))
+}
+
+func GetUserIDFromContext(ctx context.Context) int {
+	userID, ok := ctx.Value(UserKey).(int)
+	if !ok {
+		return -1
+	}
+	return userID
 }

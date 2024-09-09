@@ -95,7 +95,7 @@ func (s *Store) GetProductByIDs(productIDs []int) ([]types.Product, error) {
 	return products, nil
 }
 
-func (s *Store) UpdateProduct(product types.Product) error {
+func (s *Store) UpdateProduct(product *types.Product) error {
 	_, err := s.db.Exec("UPDATE products SET name = ?, price = ?, description = ?, quantity = ?, WHERE id = ?", product.Name, product.Price, product.Description, product.Quantity, product.ID)
 
 	if err != nil {

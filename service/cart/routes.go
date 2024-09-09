@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
+	"github.com/mohitsolanki026/econ-go/service/auth"
 	"github.com/mohitsolanki026/econ-go/types"
 	"github.com/mohitsolanki026/econ-go/utils"
 )
@@ -13,19 +14,20 @@ import (
 type Handler struct {
 	Store        types.OrderStore
 	ProductStore types.ProductStore
+	UserStore types.UserStore
 }
 
-func NewHandler(store types.OrderStore, productStore types.ProductStore) *Handler {
-	return &Handler{Store: store, ProductStore: productStore}
+func NewHandler(store types.OrderStore, productStore types.ProductStore, userStore types.UserStore) *Handler {
+	return &Handler{Store: store, ProductStore: productStore, UserStore: userStore}
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/cart/checkout", h.handleCheckout).Methods(http.MethodPost)
+	router.HandleFunc("/cart/checkout",auth.WithJwtAuth(h.handleCheckout, h.UserStore)).Methods(http.MethodPost)
 }
 
 func (h *Handler) handleCheckout(w http.ResponseWriter, r *http.Request) {
 
-	var userId = 0
+	userId := auth.GetUserIDFromContext(r.Context())
 
 	var cart types.CartCheckoutPayload
 	if err := utils.ParseJSON(r, &cart); err != nil {
