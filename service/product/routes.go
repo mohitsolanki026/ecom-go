@@ -49,7 +49,6 @@ func (h *Handler) handleCreateProduct(w http.ResponseWriter, r *http.Request){
 	}
 
 	err := h.Store.CreateProduct(&payload)
-
 	
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
